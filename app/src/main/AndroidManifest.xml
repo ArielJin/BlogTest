@@ -14,6 +14,9 @@
             <nav-graph android:value="@navigation/navigation" />
         </activity>
         <activity android:name=".TabActivity">
+
+        </activity>
+        <activity android:name=".BindSample">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
