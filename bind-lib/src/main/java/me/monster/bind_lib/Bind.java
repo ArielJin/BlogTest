@@ -3,7 +3,9 @@ package me.monster.bind_lib;
 import android.app.Activity;
 import android.util.Log;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * @description
@@ -13,26 +15,13 @@ public class Bind {
     private static final String TAG = "Bind";
 
     public static void bind(Activity activity) {
-        // 获取所有的 public 变量
-        for (Field field : activity.getClass().getFields()) {
-            Log.d(TAG, "getFields: field name: " + field.getName());
-            BindView annotation = field.getAnnotation(BindView.class);
-            if (annotation != null) {
-                Log.e(TAG, "bind: " + annotation.value());
-            }
-        }
-        // 获取开发者声明的变量
-        for (Field field : activity.getClass().getDeclaredFields()) {
-            Log.d(TAG, "getDeclaredFields: field name: " + field.getName());
-            BindView annotation = field.getAnnotation(BindView.class);
-            if (annotation != null) {
-                try {
-                    field.setAccessible(true);
-                    field.set(activity, activity.findViewById(annotation.value()));
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            }
+        try {
+            Class bindClass = Class.forName(activity.getClass().getCanonicalName() + "Binding");
+            Class activityClass = Class.forName(activity.getClass().getCanonicalName());
+            Constructor constructor = bindClass.getDeclaredConstructor(activityClass);
+            constructor.newInstance(activity);
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
         }
     }
 }

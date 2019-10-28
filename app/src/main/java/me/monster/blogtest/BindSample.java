@@ -7,7 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import me.monster.bind_lib.Bind;
-import me.monster.bind_lib.BindView;
+import me.monster.lib_annotaion.BindView;
 
 /**
  * @description

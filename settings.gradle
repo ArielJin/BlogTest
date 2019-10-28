@@ -1,1 +1,1 @@
-include ':app', ':bind-lib'
+include ':app', ':bind-lib', ':lib-procressor', ':lib-annotaion'
