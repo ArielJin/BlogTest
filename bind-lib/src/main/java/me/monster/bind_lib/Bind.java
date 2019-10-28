@@ -16,7 +16,7 @@ public class Bind {
 
     public static void bind(Activity activity) {
         try {
-            Class bindClass = Class.forName(activity.getClass().getCanonicalName() + "Binding");
+            Class bindClass = Class.forName(activity.getClass().getCanonicalName() + "$Binding");
             Class activityClass = Class.forName(activity.getClass().getCanonicalName());
             Constructor constructor = bindClass.getDeclaredConstructor(activityClass);
             constructor.newInstance(activity);
