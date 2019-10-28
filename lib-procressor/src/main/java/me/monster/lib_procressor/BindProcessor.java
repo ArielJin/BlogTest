@@ -13,14 +13,13 @@ import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
 import me.monster.lib_annotaion.BindView;
 
 public class BindProcessor extends AbstractProcessor {
-    public static final String pack_name = "me.monster.blogtest";
-
     private Filer filer;
 
     @Override
@@ -31,20 +30,33 @@ public class BindProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
-        System.out.println(" processor run !!!");
 
-        // 生成代码的目标路径：第一个参数，包路径，第二个参数，className
-
-        ClassName className = ClassName.get(pack_name, "BindSample$Binding");
-        TypeSpec builtClass = TypeSpec.classBuilder(className) .addModifiers(Modifier.PUBLIC)
-                .addMethod(MethodSpec.constructorBuilder() .addModifiers(Modifier.PUBLIC)
-                        .addParameter(ClassName.get(pack_name, "BindSample"), "activity")
-                        .addStatement("activity.tvHello = activity.findViewById(R.id.tv_hello)")
-                        .build()) .build();
-        try {
-            JavaFile.builder(pack_name, builtClass).build().writeTo(filer);
-        } catch (IOException e) {
-            e.printStackTrace();
+        for (Element element : roundEnvironment.getRootElements()) {
+            String packageStr = element.getEnclosingElement().toString();
+            String classStr = element.getSimpleName().toString();
+            ClassName className = ClassName.get(packageStr, classStr + "$Binding");
+            MethodSpec.Builder constructorBuilder = MethodSpec.constructorBuilder()
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(ClassName.get(packageStr, classStr), "activity");
+            boolean hasBinding = false;
+            for (Element enclosedElement : element.getEnclosedElements()) {
+                BindView bindView = enclosedElement.getAnnotation(BindView.class);
+                if (bindView != null) {
+                    hasBinding = true;
+                    constructorBuilder.addStatement("activity.$N = activity.findViewById($L)", enclosedElement.getSimpleName(), bindView.value());
+                }
+            }
+            TypeSpec buildClass = TypeSpec.classBuilder(className)
+                    .addModifiers(Modifier.PUBLIC)
+                    .addMethod(constructorBuilder.build())
+                    .build();
+            if (hasBinding) {
+                try {
+                    JavaFile.builder(packageStr, buildClass).build().writeTo(filer);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return false;
